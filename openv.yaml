@@ -12,10 +12,10 @@ action_space:
 
 tasks:
   - name: "easy"
-    description: "Easy difficulty: 10 orders, 80% prepped, 4 staff"
+    description: "Easy difficulty: 10 orders, 80 percent prepped, 4 staff"
   
   - name: "medium"
-    description: "Medium difficulty: 20 orders, 50% prepped, 3 staff"
+    description: "Medium difficulty: 20 orders, 50 percent prepped, 3 staff"
   
   - name: "hard"
-    description: "Hard difficulty: 40 orders, 20% prepped, 2 staff"
+    description: "Hard difficulty: 40 orders, 20 percent prepped, 2 staff"
