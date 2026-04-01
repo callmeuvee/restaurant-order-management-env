@@ -5,11 +5,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY restaurant_env.py .
-COPY graders.py .
-COPY baseline_inference.py .
-COPY README.md .
-COPY openv.yaml .
+COPY . .
 
-# Just keep it running
-CMD ["python", "-m", "http.server", "8000"]
+CMD ["python", "inference.py"]
