@@ -8,5 +8,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY restaurant_env.py .
 COPY graders.py .
 COPY baseline_inference.py .
+COPY README.md .
+COPY openv.yaml .
 
-CMD ["python", "baseline_inference.py"]
+# Just keep it running
+CMD ["python", "-m", "http.server", "8000"]
