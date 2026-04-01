@@ -1,20 +1,10 @@
----
-title: Restaurant Order Management
-emoji: 🍳
-colorFrom: orange
-colorTo: red
-sdk: docker
-app_file: baseline_inference.py
-pinned: false
----
 version: "1.0"
 name: "restaurant-order-management-env"
-description: "Production-ready OpenEnv environment for restaurant kitchen management with 40 dishes, ingredient states, equipment constraints, and staff scheduling"
+description: "Production-ready restaurant kitchen management environment"
 
 observation_space:
   type: "box"
   shape: [5]
-  dtype: "float32"
 
 action_space:
   type: "discrete"
@@ -22,27 +12,10 @@ action_space:
 
 tasks:
   - name: "easy"
-    description: "Easy: 10 orders, 80% prepped ingredients, 4 staff, 100% equipment reliability"
-    difficulty_level: 1
-    target_metric: "on_time_accuracy >= 0.60"
+    description: "Easy difficulty: 10 orders, 80% prepped, 4 staff"
   
   - name: "medium"
-    description: "Medium: 20 orders, 50% prepped ingredients, 3 staff, 70% equipment reliability, 10% shortages"
-    difficulty_level: 2
-    target_metric: "on_time_accuracy >= 0.75"
+    description: "Medium difficulty: 20 orders, 50% prepped, 3 staff"
   
   - name: "hard"
-    description: "Hard: 40 orders, 20% prepped ingredients, 2 staff, 50% equipment reliability, 30% shortages, VIP orders"
-    difficulty_level: 3
-    target_metric: "on_time_accuracy >= 0.85"
-
-metadata:
-  author: "Yuvraj Chouhan"
-  version: "1.0"
-  license: "MIT"
-  environment_type: "restaurant_management"
-  domain: "operations_optimization"
-  state_representation: "observation_dict"
-  reward_type: "dense"
-  action_type: "discrete"
-  max_episode_steps: 100
+    description: "Hard difficulty: 40 orders, 20% prepped, 2 staff"
