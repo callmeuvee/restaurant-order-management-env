@@ -1,21 +1,30 @@
-version: "1.0"
-name: "restaurant-order-management-env"
-description: "Production-ready restaurant kitchen management environment"
+environment:
+  name: restaurant-order-management-env
+  type: rl
+  version: "1.0"
+  description: Production-ready restaurant kitchen management environment
 
 observation_space:
-  type: "box"
+  type: box
   shape: [5]
 
 action_space:
-  type: "discrete"
+  type: discrete
   n: 40
 
 tasks:
-  - name: "easy"
-    description: "Easy difficulty: 10 orders, 80 percent prepped, 4 staff"
-  
-  - name: "medium"
-    description: "Medium difficulty: 20 orders, 50 percent prepped, 3 staff"
-  
-  - name: "hard"
-    description: "Hard difficulty: 40 orders, 20 percent prepped, 2 staff"
+  - name: easy
+    description: Easy difficulty with 10 orders
+  - name: medium
+    description: Medium difficulty with 20 orders
+  - name: hard
+    description: Hard difficulty with 40 orders
+
+training:
+  episodes: 100
+  max_steps_per_episode: 100
+  learning_rate: 0.001
+
+logging:
+  save_path: ./results
+  log_interval: 10
