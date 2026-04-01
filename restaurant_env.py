@@ -1,11 +1,45 @@
 import random
 from typing import Dict, List, Tuple, Any
+from pydantic import BaseModel
+
+# Pydantic models for type safety
+class OrderState(BaseModel):
+    id: int
+    dish_name: str
+    prep_time: int
+    wait_time: int
+    priority: str
+    status: str
+
+class Observation(BaseModel):
+    pending_orders: int
+    completed_orders: int
+    step_count: int
+    staff_available: int
+    avg_wait_time: float
+
+class Action(BaseModel):
+    order_id: int
+
+class StepResult(BaseModel):
+    observation: Dict
+    reward: float
+    done: bool
+    info: Dict
 
 class RestaurantOrderEnv:
-    """Production-ready restaurant kitchen management environment"""
+    """Production-ready restaurant kitchen management environment
+    
+    OpenEnv-compliant environment for training RL agents to manage
+    restaurant kitchen operations with realistic constraints.
+    """
     
     def __init__(self, difficulty="medium"):
-        """Initialize environment"""
+        """Initialize environment
+        
+        Args:
+            difficulty: "easy", "medium", or "hard"
+        """
         self.difficulty = difficulty
         
         # 40 Dishes with equipment requirements
@@ -114,19 +148,19 @@ class RestaurantOrderEnv:
         # Set difficulty parameters
         if difficulty == "easy":
             self.max_orders = 10
-            self.prep_ratio = 0.8  # 80% prepped
+            self.prep_ratio = 0.8
             self.staff["total"] = 4
             self.equipment_reliability = 1.0
             self.ingredient_shortage_rate = 0.0
         elif difficulty == "medium":
             self.max_orders = 20
-            self.prep_ratio = 0.5  # 50% prepped
+            self.prep_ratio = 0.5
             self.staff["total"] = 3
             self.equipment_reliability = 0.7
             self.ingredient_shortage_rate = 0.1
-        else:  # hard
+        else:
             self.max_orders = 40
-            self.prep_ratio = 0.2  # 20% prepped
+            self.prep_ratio = 0.2
             self.staff["total"] = 2
             self.equipment_reliability = 0.5
             self.ingredient_shortage_rate = 0.3
@@ -151,21 +185,19 @@ class RestaurantOrderEnv:
         self.staff["available"] = self.staff["total"]
         self.staff["busy"] = 0
         
-        # Generate orders with random ingredients in various prep states
+        # Generate orders
         for i in range(self.max_orders):
             dish = random.choice(self.dishes)
             priority = "vip" if random.random() < 0.1 else "normal"
             
-            # Randomize ingredient prep states based on difficulty
+            # Randomize ingredient prep states
             ingredients_state = {}
             for ing_name in dish.get("ingredients", {}):
                 if random.random() < self.prep_ratio:
-                    # Pre-prepped: skip to last state
                     ing_info = self.ingredients.get(ing_name, {})
                     if ing_info.get("states"):
                         ingredients_state[ing_name] = ing_info["states"][-1]
                 else:
-                    # Raw: start from first state
                     ing_info = self.ingredients.get(ing_name, {})
                     if ing_info.get("states"):
                         ingredients_state[ing_name] = ing_info["states"][0]
@@ -185,65 +217,49 @@ class RestaurantOrderEnv:
             }
             self.pending_orders.append(order)
         
-        # Reset equipment health
+        # Reset equipment
         for eq in self.equipment.values():
             eq["busy"] = 0
             eq["health"] = 1.0 if random.random() > (1 - self.equipment_reliability) else 0.5
         
-        observation = self._get_observation()
-        return observation
+        return self._get_observation()
     
     def step(self, action):
         """Agent chooses order to cook"""
         self.step_count += 1
         
-        # If no pending orders, episode ends
         if len(self.pending_orders) == 0:
             return self._get_observation(), 0.0, True, {"status": "all_orders_done"}
         
-        # Validate action
         if action < 0 or action >= len(self.pending_orders):
             action = 0
         
         order = self.pending_orders[action]
-        
-        # Check ingredient readiness
         ingredients_ready = self._check_ingredients_ready(order)
-        
-        # Calculate reward (complex logic)
         reward = self._calculate_reward(order, ingredients_ready)
         
-        # Process order
         self.completed_orders.append(order)
         self.pending_orders.pop(action)
         self.total_wait_time += order["wait_time"]
         
-        # Update equipment
         if order["equipment"]:
             self.equipment[order["equipment"]]["busy"] += 1
-            # Random equipment breakdown
             if random.random() > self.equipment_reliability:
                 self.equipment[order["equipment"]]["health"] = 0.5
         
-        # Update staff
         if self.staff["available"] > 0:
             self.staff["available"] -= 1
             self.staff["busy"] += 1
         
-        # Increment wait times for remaining orders
         for o in self.pending_orders:
             o["wait_time"] += 1
         
-        # Check spoilage (old ingredients go bad)
         for o in self.pending_orders:
             if o["wait_time"] > 25:
                 self.spoiled_items.append(o["dish_name"])
                 reward -= 0.5
         
-        # Check if done
         done = len(self.pending_orders) == 0 or self.step_count >= self.max_steps
-        
-        observation = self._get_observation()
         
         info = {
             "cooked_dish": order["dish_name"],
@@ -252,10 +268,10 @@ class RestaurantOrderEnv:
             "ingredients_ready": ingredients_ready,
         }
         
-        return observation, reward, done, info
+        return self._get_observation(), reward, done, info
     
     def _check_ingredients_ready(self, order):
-        """Check if all ingredients are in ready state"""
+        """Check if all ingredients are ready"""
         for ing_name in order.get("ingredients_needed", {}):
             current_state = order["ingredients_state"].get(ing_name)
             if current_state is None:
@@ -270,10 +286,9 @@ class RestaurantOrderEnv:
         return True
     
     def _calculate_reward(self, order, ingredients_ready):
-        """Calculate sophisticated reward based on multiple factors"""
+        """Calculate reward"""
         base = 0.5
         
-        # Time-based reward (fairness)
         if order["wait_time"] >= 15:
             time_reward = 0.5
         elif order["wait_time"] >= 10:
@@ -283,23 +298,16 @@ class RestaurantOrderEnv:
         else:
             time_reward = -0.2
         
-        # Priority bonus
         priority_bonus = 0.3 if order["priority"] == "vip" else 0.0
-        
-        # Ingredient readiness bonus
         ingredient_bonus = 0.2 if ingredients_ready else -0.1
-        
-        # Equipment health penalty
         equipment_penalty = -0.2 if order["equipment"] and self.equipment[order["equipment"]]["health"] < 1.0 else 0.0
-        
-        # Staff shortage penalty
         staff_penalty = -0.1 if self.staff["available"] <= 1 else 0.0
         
         total = base + time_reward + priority_bonus + ingredient_bonus + equipment_penalty + staff_penalty
         return min(max(total, -2.0), 2.0)
     
     def _get_observation(self):
-        """Return current observation"""
+        """Return observation"""
         return {
             "pending_orders": len(self.pending_orders),
             "completed_orders": len(self.completed_orders),
@@ -317,7 +325,6 @@ class RestaurantOrderEnv:
         on_time_accuracy = on_time / max(len(self.completed_orders), 1)
         
         staff_util = 1.0 - (self.staff["available"] / self.staff["total"]) if self.staff["total"] > 0 else 0
-        
         waste_penalty = len(self.spoiled_items) / max(len(self.completed_orders), 1)
         
         return {
