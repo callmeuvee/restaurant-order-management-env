@@ -15,11 +15,12 @@ dependencies = [
     "pydantic>=2.0.0",
     "flask",
     "openai>=1.0.0",
+    "openenv-core>=0.2.0",
 ]
 
-[project.urls]
-Homepage = "https://github.com/YOUR_USERNAME/restaurant-order-management-env"
-Repository = "https://github.com/YOUR_USERNAME/restaurant-order-management-env"
+[project.scripts]
+server = "app:app"
 
-[tool.setuptools]
-packages = ["restaurant_order_management"]
+[project.urls]
+Homepage = "https://github.com/callmeuvee/restaurant-order-management-env"
+Repository = "https://github.com/callmeuvee/restaurant-order-management-env"
