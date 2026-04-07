@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "restaurant-order-management-env"
+version = "1.0.0"
+description = "Production-ready restaurant kitchen management environment"
+authors = [{name = "Yuvraj Chouhan", email = "ycgodgaming@gmail.com"}]
+license = {text = "MIT"}
+requires-python = ">=3.8"
+dependencies = [
+    "gymnasium>=0.28.0",
+    "numpy>=1.24.0",
+    "pydantic>=2.0.0",
+    "flask",
+    "openai>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/YOUR_USERNAME/restaurant-order-management-env"
+Repository = "https://github.com/YOUR_USERNAME/restaurant-order-management-env"
+
+[tool.setuptools]
+packages = ["restaurant_order_management"]
