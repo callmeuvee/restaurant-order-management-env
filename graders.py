@@ -10,10 +10,13 @@ def grade_medium_task(state):
     completed = state["completed_orders"]
     total = state["total_orders"]
     
-    efficiency = completed / max(total, 1)
+    if total == 0:
+        return 0.0
+    
+    efficiency = completed / total
     avg_wait = state["avg_wait_time"]
     
-    fairness = 1.0 if avg_wait <= 10 else 0.5
+    fairness = 1.0 if avg_wait <= 10 else max(0.0, 1.0 - (avg_wait - 10) / 20)
     
     score = (accuracy / 0.75 + efficiency + fairness) / 3
     return max(0.0, min(score, 1.0))
@@ -24,15 +27,17 @@ def grade_hard_task(state):
     completed = state["completed_orders"]
     total = state["total_orders"]
     
-    efficiency = completed / max(total, 1)
+    if total == 0:
+        return 0.0
+    
+    efficiency = completed / total
     avg_wait = state["avg_wait_time"]
     
-    staff_util = 1.0 - (avg_wait / 30)  # Penalty for long waits
-    
-    waste_penalty = 0.0  # No waste tracking in basic version
+    staff_util = max(0.0, 1.0 - (avg_wait / 30))
+    waste_penalty = 0.0
     
     score = (
-        (accuracy / 0.85) * 0.4 +
+        min(accuracy / 0.85, 1.0) * 0.4 +
         efficiency * 0.3 +
         staff_util * 0.2 +
         (1.0 - waste_penalty) * 0.1
