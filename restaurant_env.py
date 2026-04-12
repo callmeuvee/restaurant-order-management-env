@@ -286,25 +286,20 @@ class RestaurantOrderEnv:
         return True
     
     def _calculate_reward(self, order, ingredients_ready):
-        """Calculate reward"""
-        base = 0.5
+        """Calculate reward - guaranteed [0.1, 0.9]"""
+        reward = 0.5
+        reward += order["wait_time"] * 0.01
+        if order["priority"] == "vip":
+            reward += 0.05
+        if ingredients_ready:
+            reward += 0.05
         
-        if order["wait_time"] >= 15:
-            time_reward = 0.5
-        elif order["wait_time"] >= 10:
-            time_reward = 0.3
-        elif order["wait_time"] >= 5:
-            time_reward = 0.1
-        else:
-            time_reward = -0.2
-        
-        priority_bonus = 0.3 if order["priority"] == "vip" else 0.0
-        ingredient_bonus = 0.2 if ingredients_ready else -0.1
-        equipment_penalty = -0.2 if order["equipment"] and self.equipment[order["equipment"]]["health"] < 1.0 else 0.0
-        staff_penalty = -0.1 if self.staff["available"] <= 1 else 0.0
-        
-        total = base + time_reward + priority_bonus + ingredient_bonus + equipment_penalty + staff_penalty
-        return min(max(total, 0.001), 0.999)
+        if reward < 0.1:
+            reward = 0.1
+        if reward > 0.9:
+            reward = 0.9
+            
+        return float(reward)
     
     def _get_observation(self):
         """Return observation"""
