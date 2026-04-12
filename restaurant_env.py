@@ -304,7 +304,7 @@ class RestaurantOrderEnv:
         staff_penalty = -0.1 if self.staff["available"] <= 1 else 0.0
         
         total = base + time_reward + priority_bonus + ingredient_bonus + equipment_penalty + staff_penalty
-        return min(max(total, 0.0), 1.0)  # Clamp to [0, 1]
+        return min(max(total, 0.001), 0.999)
     
     def _get_observation(self):
         """Return observation"""
