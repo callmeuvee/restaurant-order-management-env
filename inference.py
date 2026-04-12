@@ -15,7 +15,7 @@ STDOUT FORMAT
 
     [START] task=<task_name> env=<benchmark> model=<model_name>
     [STEP]  step=<n> action=<action> reward=<0.00> done=<true|false> error=<msg|null>
-    [END]   success=<true|false> steps=<n> score=<score> rewards=<r1,r2,...,rn>
+    [END]   success=<true|false> steps=<n> rewards=<r1,r2,...,rn>
 
   Rules:
     - One [START] line at episode begin.
@@ -72,10 +72,10 @@ def log_step(step: int, action: str, reward: float, done: bool, error: Optional[
     )
 
 
-def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
+def log_end(success: bool, steps: int, rewards: List[float]) -> None:
     """Log episode end"""
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
-    print(f"[END] success={str(success).lower()} steps={steps} score={score:.2f} rewards={rewards_str}", flush=True)
+    print(f"[END] success={str(success).lower()} steps={steps} rewards={rewards_str}", flush=True)
 
 
 def get_model_action(client: OpenAI, step: int, obs: dict, history: List[str]) -> str:
@@ -148,6 +148,8 @@ def run_episode(difficulty: str = "medium") -> None:
             # Step environment
             obs, reward, done, info = env.step(action)
             
+            # Clamp reward to [0, 1]
+            reward = float(max(0.0, min(reward, 1.0)))
             rewards.append(reward)
             steps_taken = step
             error = None
@@ -168,7 +170,7 @@ def run_episode(difficulty: str = "medium") -> None:
         else:
             score = grade_hard_task(state)
         
-        score = min(max(score, 0.0), 1.0)
+        score = float(max(0.0, min(score, 1.0)))
         success = score >= SUCCESS_SCORE_THRESHOLD
     
     except Exception as e:
@@ -176,7 +178,7 @@ def run_episode(difficulty: str = "medium") -> None:
         success = False
     
     finally:
-        log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
+        log_end(success=success, steps=steps_taken, rewards=rewards)
 
 
 def main() -> None:
