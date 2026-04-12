@@ -278,6 +278,7 @@ def run():
             for step in range(1, min(51, env.max_orders + 1)):
                 action = 0
                 obs, reward, done, info = env.step(action)
+                reward = float(max(0.0, min(reward, 1.0)))
                 rewards.append(reward)
                 
                 log(f"[STEP] step={step} action={action} reward={reward:.2f} done={str(done).lower()} error=null")
@@ -285,18 +286,16 @@ def run():
                 if done:
                     break
             
-python            state = env.state()
+            state = env.state()
             if diff == "easy":
                 score = grade_easy_task(state)
             elif diff == "medium":
                 score = grade_medium_task(state)
             else:
                 score = grade_hard_task(state)
-
-            # Clamp rewards to [0, 1]
+            
             rewards_clamped = [float(max(0.0, min(float(r), 1.0))) for r in rewards]
             rewards_str = ",".join(f"{r:.2f}" for r in rewards_clamped)
-
             log(f"[END] success=true steps={len(rewards)} rewards={rewards_str}")
             log(f"\n✅ Difficulty: {diff.upper()}")
             log(f"   Completed: {state['completed_orders']}/{state['total_orders']}")
@@ -309,13 +308,8 @@ python            state = env.state()
         log(f"Error: {str(e)}")
         return jsonify({"output": "\n".join(output_lines), "success": False}), 500
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=7860, debug=False)
-
-
-
-    def main():
-         """Main entry point"""
+def main():
+    """Main entry point"""
     app.run(host='0.0.0.0', port=7860, debug=False)
 
 if __name__ == '__main__':
