@@ -278,7 +278,7 @@ def run():
             for step in range(1, min(51, env.max_orders + 1)):
                 action = 0
                 obs, reward, done, info = env.step(action)
-                reward = float(max(0.0, min(reward, 1.0)))
+                reward = float(max(0.001, min(reward, 0.999)))
                 rewards.append(reward)
                 
                 log(f"[STEP] step={step} action={action} reward={reward:.2f} done={str(done).lower()} error=null")
@@ -294,7 +294,7 @@ def run():
             else:
                 score = grade_hard_task(state)
             
-            rewards_clamped = [float(max(0.0, min(float(r), 1.0))) for r in rewards]
+            rewards_clamped = [float(max(0.001, min(float(r), 0.999))) for r in rewards]
             rewards_str = ",".join(f"{r:.2f}" for r in rewards_clamped)
             log(f"[END] success=true steps={len(rewards)} rewards={rewards_str}")
             log(f"\n✅ Difficulty: {diff.upper()}")
