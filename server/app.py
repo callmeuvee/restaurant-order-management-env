@@ -1,6 +1,8 @@
 from flask import Flask, render_template_string, request, jsonify
 import os
 import threading
+import sys
+sys.path.insert(0, '/app')
 from restaurant_env import RestaurantOrderEnv
 from graders import grade_easy_task, grade_medium_task, grade_hard_task
 from openai import OpenAI
@@ -290,8 +292,14 @@ def run():
                 score = grade_medium_task(state)
             else:
                 score = grade_hard_task(state)
-            
-            rewards_str = ",".join(f"{r:.2f}" for r in rewards)
+
+            # Clamp score to [0, 1]
+            score = float(max(0.0, min(float(score), 1.0)))
+
+            # Clamp each reward to [0, 1] and format
+            rewards_clamped = [float(max(0.0, min(float(r), 1.0))) for r in rewards]
+            rewards_str = ",".join(f"{r:.2f}" for r in rewards_clamped)
+
             log(f"[END] success=true steps={len(rewards)} score={score:.2f} rewards={rewards_str}")
             log(f"\n✅ Difficulty: {diff.upper()}")
             log(f"   Completed: {state['completed_orders']}/{state['total_orders']}")
@@ -306,3 +314,12 @@ def run():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7860, debug=False)
+
+
+
+    def main():
+         """Main entry point"""
+    app.run(host='0.0.0.0', port=7860, debug=False)
+
+if __name__ == '__main__':
+    main()
