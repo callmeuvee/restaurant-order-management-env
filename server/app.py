@@ -285,7 +285,7 @@ def run():
                 if done:
                     break
             
-            state = env.state()
+python            state = env.state()
             if diff == "easy":
                 score = grade_easy_task(state)
             elif diff == "medium":
@@ -293,14 +293,11 @@ def run():
             else:
                 score = grade_hard_task(state)
 
-            # Clamp score to [0, 1]
-            score = float(max(0.0, min(float(score), 1.0)))
-
-            # Clamp each reward to [0, 1] and format
+            # Clamp rewards to [0, 1]
             rewards_clamped = [float(max(0.0, min(float(r), 1.0))) for r in rewards]
             rewards_str = ",".join(f"{r:.2f}" for r in rewards_clamped)
 
-            log(f"[END] success=true steps={len(rewards)} score={score:.2f} rewards={rewards_str}")
+            log(f"[END] success=true steps={len(rewards)} rewards={rewards_str}")
             log(f"\n✅ Difficulty: {diff.upper()}")
             log(f"   Completed: {state['completed_orders']}/{state['total_orders']}")
             log(f"   Accuracy: {state['on_time_accuracy']:.1%}")
